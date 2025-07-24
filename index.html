@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tablet To-Do List App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4f8cff;
+      --primary-light: #eaf1ff;
+      --accent: #fed6e3;
+      --danger: #ef4444;
+      --bg-gradient: linear-gradient(135deg, #eaf1ff 0%, #fed6e3 100%);
+      --container-bg: rgba(255,255,255,0.95);
+      --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.13);
+      --border: 1.5px solid #e3e8f0;
+      --text: #23272f;
+      --text-light: #7b8494;
+      --completed: #bdbdbd;
+      --card-bg: #f8fafc;
+      --date-bg: #f1f5fa;
+      --input-bg: #f4f6fb;
+      --input-border: #d1d5db;
+      --scrollbar-bg: #e0e7ef;
+      --scrollbar-thumb: #b6c6e3;
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', Arial, sans-serif;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      color: var(--text);
+      transition: background 0.5s;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 0;
+    }
+    .header {
+      width: 100%;
+      max-width: 520px;
+      margin-top: 36px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8px;
+    }
+    .greeting {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.01em;
+      user-select: none;
+    }
+    .clock {
+      font-size: 1.1rem;
+      color: var(--text-light);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      user-select: none;
+      min-width: 90px;
+      text-align: right;
+    }
+    .todo-container {
+      background: var(--container-bg);
+      box-shadow: var(--shadow);
+      border-radius: 28px;
+      border: var(--border);
+      padding: 32px 28px 28px 28px;
+      width: 100%;
+      max-width: 520px;
+      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      margin-bottom: 32px;
+      position: relative;
+    }
+    .todo-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .todo-title-row .icon {
+      font-size: 2.1rem;
+      color: var(--primary);
+      filter: drop-shadow(0 2px 4px #eaf1ff);
+      user-select: none;
+    }
+    .todo-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.01em;
+      user-select: none;
+    }
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .input-row input[type="text"] {
+      flex: 1;
+      padding: 13px 16px;
+      border-radius: 16px;
+      border: 1.5px solid var(--input-border);
+      background: var(--input-bg);
+      font-size: 1.08rem;
+      color: var(--text);
+      transition: border 0.2s, background 0.2s;
+      outline: none;
+    }
+    .input-row input[type="text"]:focus {
+      border-color: var(--primary);
+      background: #fff;
+    }
+    .input-row input[type="text"]::placeholder {
+      color: var(--text-light);
+      opacity: 1;
+      font-weight: 400;
+    }
+    .input-row button {
+      padding: 0 26px;
+      border-radius: 16px;
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      font-size: 1.08rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px rgba(79,140,255,0.08);
+      outline: none;
+      letter-spacing: 0.01em;
+    }
+    .input-row button:hover, .input-row button:focus {
+      background: #2563eb;
+    }
+    .tasks-section {
+      flex: 1;
+      overflow-y: auto;
+      margin: 0;
+      padding: 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
+      transition: background 0.2s;
+    }
+    .tasks-section::-webkit-scrollbar {
+      width: 8px;
+      background: var(--scrollbar-bg);
+      border-radius: 8px;
+    }
+    .tasks-section::-webkit-scrollbar-thumb {
+      background: var(--scrollbar-thumb);
+      border-radius: 8px;
+    }
+    .date-group {
+      margin-bottom: 22px;
+    }
+    .date-label {
+      background: var(--date-bg);
+      color: var(--text-light);
+      font-size: 1.01rem;
+      font-weight: 600;
+      border-radius: 12px;
+      padding: 7px 18px 7px 14px;
+      margin-bottom: 10px;
+      display: inline-block;
+      box-shadow: 0 1px 4px #eaf1ff;
+      letter-spacing: 0.01em;
+      user-select: none;
+    }
+    .task-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .task-card {
+      display: flex;
+      align-items: center;
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(79,140,255,0.06);
+      padding: 13px 16px;
+      font-size: 1.08rem;
+      color: var(--text);
+      position: relative;
+      transition: background 0.2s, box-shadow 0.2s, color 0.2s, opacity 0.2s;
+      user-select: none;
+      min-height: 48px;
+      cursor: pointer;
+      gap: 14px;
+      animation: fadeIn 0.5s;
+    }
+    .task-card.completed {
+      color: var(--completed);
+      opacity: 0.6;
+      text-decoration: line-through;
+      background: #f1f5fa;
+    }
+    .check-circle {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2.5px solid var(--primary);
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 6px;
+      transition: background 0.2s, border 0.2s;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .task-card.completed .check-circle {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+    .checkmark {
+      display: none;
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+    .task-card.completed .checkmark {
+      display: block;
+    }
+    .task-text {
+      flex: 1;
+      font-size: 1.08rem;
+      word-break: break-word;
+      padding-right: 10px;
+      transition: color 0.2s;
+    }
+    .delete-btn {
+      background: none;
+      border: none;
+      color: var(--danger);
+      font-size: 1.3rem;
+      cursor: pointer;
+      margin-left: 10px;
+      transition: color 0.2s, transform 0.2s;
+      border-radius: 50%;
+      padding: 4px 6px;
+      outline: none;
+      flex-shrink: 0;
+    }
+    .delete-btn:hover, .delete-btn:focus {
+      color: #b91c1c;
+      background: rgba(239,68,68,0.08);
+      transform: scale(1.15);
+    }
+    .empty-message {
+      text-align: center;
+      color: var(--text-light);
+      font-size: 1.08rem;
+      margin-top: 40px;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+      user-select: none;
+      animation: fadeIn 0.5s;
+    }
+    @media (max-width: 600px) {
+      .todo-container, .header {
+        max-width: 98vw;
+        padding-left: 2vw;
+        padding-right: 2vw;
+      }
+      .todo-title {
+        font-size: 1.3rem;
+      }
+      .input-row input[type="text"] {
+        font-size: 0.98rem;
+      }
+      .task-card {
+        font-size: 0.98rem;
+        padding: 10px 10px;
+      }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="greeting" id="greeting">Hello, User!</div>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+  <div class="todo-container">
+    <div class="todo-title-row">
+      <span class="icon" aria-label="notepad">📝</span>
+      <span class="todo-title">To Do List</span>
+    </div>
+    <form class="input-row" id="todo-form" autocomplete="off">
+      <input type="text" id="todo-input" placeholder="Add new task" maxlength="80" required>
+      <button type="submit" id="add-btn">Add</button>
+    </form>
+    <div class="tasks-section" id="tasks-section"></div>
+    <div class="empty-message" id="empty-message">No tasks yet. Add your first task!</div>
+  </div>
+  <script>
+    // --- Personalized Greeting ---
+    function getGreeting() {
+      const now = new Date();
+      const hour = now.getHours();
+      let greeting = 'Hello';
+      if (hour < 12) greeting = 'Good Morning';
+      else if (hour < 18) greeting = 'Good Afternoon';
+      else greeting = 'Good Evening';
+      // You can personalize with a name if desired
+      return `Hello, User! ${greeting}!`;
+    }
+    document.getElementById('greeting').textContent = getGreeting();
+
+    // --- Real-time Clock ---
+    function updateClock() {
+      const now = new Date();
+      const pad = n => n.toString().padStart(2, '0');
+      const time = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      document.getElementById('clock').textContent = time;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // --- LocalStorage Key ---
+    const STORAGE_KEY = 'tablet_todo_tasks';
+
+    // --- DOM Elements ---
+    const todoForm = document.getElementById('todo-form');
+    const todoInput = document.getElementById('todo-input');
+    const tasksSection = document.getElementById('tasks-section');
+    const emptyMessage = document.getElementById('empty-message');
+
+    // --- State ---
+    let tasks = [];
+
+    // --- Helper: Format Date as DD/MM/YYYY ---
+    function formatDate(date) {
+      const d = new Date(date);
+      const day = d.getDate().toString().padStart(2, '0');
+      const month = (d.getMonth() + 1).toString().padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+
+    // --- Group Tasks by Date ---
+    function groupTasksByDate(tasks) {
+      const groups = {};
+      tasks.forEach(task => {
+        const date = formatDate(task.date);
+        if (!groups[date]) groups[date] = [];
+        groups[date].push(task);
+      });
+      // Sort by date descending
+      return Object.entries(groups).sort((a, b) => {
+        const da = a[0].split('/').reverse().join('-');
+        const db = b[0].split('/').reverse().join('-');
+        return db.localeCompare(da);
+      });
+    }
+
+    // --- Load Tasks from LocalStorage ---
+    function loadTasks() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      tasks = saved ? JSON.parse(saved) : [];
+    }
+
+    // --- Save Tasks to LocalStorage ---
+    function saveTasks() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
+
+    // --- Render Tasks ---
+    function renderTasks() {
+      tasksSection.innerHTML = '';
+      if (tasks.length === 0) {
+        emptyMessage.style.display = 'block';
+        return;
+      } else {
+        emptyMessage.style.display = 'none';
+      }
+      const grouped = groupTasksByDate(tasks);
+      grouped.forEach(([date, group]) => {
+        // Date label
+        const dateDiv = document.createElement('div');
+        dateDiv.className = 'date-group';
+        const dateLabel = document.createElement('div');
+        dateLabel.className = 'date-label';
+        dateLabel.textContent = `Date: ${date}`;
+        dateDiv.appendChild(dateLabel);
+        // Task list
+        const ul = document.createElement('ul');
+        ul.className = 'task-list';
+        group.forEach((task, idx) => {
+          const li = document.createElement('li');
+          li.className = 'task-card' + (task.completed ? ' completed' : '');
+          // Checkbox circle
+          const check = document.createElement('span');
+          check.className = 'check-circle';
+          check.title = 'Mark as complete';
+          check.onclick = () => {
+            task.completed = !task.completed;
+            saveTasks();
+            renderTasks();
+          };
+          // Checkmark
+          const checkmark = document.createElement('span');
+          checkmark.className = 'checkmark';
+          checkmark.innerHTML = '&#10003;';
+          check.appendChild(checkmark);
+          if (task.completed) checkmark.style.display = 'block';
+          // Task text
+          const text = document.createElement('span');
+          text.className = 'task-text';
+          text.textContent = task.text;
+          // Delete button
+          const delBtn = document.createElement('button');
+          delBtn.className = 'delete-btn';
+          delBtn.innerHTML = '🗑️';
+          delBtn.title = 'Delete';
+          delBtn.onclick = (e) => {
+            e.stopPropagation();
+            tasks = tasks.filter(t => t !== task);
+            saveTasks();
+            renderTasks();
+          };
+          li.appendChild(check);
+          li.appendChild(text);
+          li.appendChild(delBtn);
+          ul.appendChild(li);
+        });
+        dateDiv.appendChild(ul);
+        tasksSection.appendChild(dateDiv);
+      });
+    }
+
+    // --- Add New Task ---
+    todoForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const value = todoInput.value.trim();
+      if (value) {
+        tasks.push({ text: value, completed: false, date: new Date().toISOString() });
+        saveTasks();
+        renderTasks();
+        todoInput.value = '';
+        todoInput.focus();
+      }
+    });
+
+    // --- Initial Load ---
+    loadTasks();
+    renderTasks();
+  </script>
+</body>
+</html> 
